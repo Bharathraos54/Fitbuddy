@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bharathraos/Documents/AI/My first AI project/gym-diet-tracker/.claude/hooks/post-edit-format.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "food-nutrition": {
+      "command": "node",
+      "args": [
+        "/Users/bharathraos/Documents/AI/My first AI project/gym-diet-tracker/mcp/food-server.mjs"
+      ]
+    }
+  }
+}
