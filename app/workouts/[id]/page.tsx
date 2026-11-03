@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -24,14 +24,14 @@ export default function RoutineDetailPage() {
   const [form, setForm] = useState({ exercise_name: '', default_sets: 3, default_reps: 10, default_weight_kg: 0 })
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { fetchRoutine() }, [id])
-
-  async function fetchRoutine() {
+  const fetchRoutine = useCallback(async () => {
     const res = await fetch(`/api/routines/${id}`)
     if (!res.ok) { router.push('/workouts'); return }
     setRoutine(await res.json())
     setLoading(false)
-  }
+  }, [id, router])
+
+  useEffect(() => { fetchRoutine() }, [fetchRoutine])
 
   async function addExercise(e: React.FormEvent) {
     e.preventDefault()

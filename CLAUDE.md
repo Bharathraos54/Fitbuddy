@@ -1,8 +1,9 @@
 # Gym & Diet Tracker — Claude Project Memory
 
 ## What this app is
-A personal web app for tracking gym workouts, diet, and fitness goals.
-Built by Bharath as a learning project to explore Claude Code features.
+FitBuddy — a mobile-first web app (installable PWA) for tracking gym workouts, diet,
+and fitness goals. Target users: **gym beginners** who don't know what to do; the
+AI-generated starter plan (onboarding → `/api/generate-plan`) is the core hook.
 
 ## Tech Stack
 - **Framework:** Next.js (App Router) with TypeScript
@@ -37,13 +38,17 @@ gym-diet-tracker/
 - `meal_logs` — daily food entries
 - `strength_goals` — target weight per exercise
 - `workout_freq_goals` — target days per week
+- `user_profiles` — onboarding answers + `onboarding_completed`
+
+Schema and RLS policies live in `supabase/schema.sql`.
 
 ## Coding Conventions
 - Use TypeScript everywhere — no plain `.js` files
 - Use `async/await` not `.then()` chains
 - Keep components small — one responsibility per component
 - API routes live in `app/api/[resource]/route.ts`
-- Supabase client import: `import { supabase } from '@/lib/supabase'`
+- Supabase in server code / API routes: `import { createClient } from '@/lib/supabase-server'` (async)
+- Supabase in client components: `import { createClient } from '@/lib/supabase'`
 - All Tailwind — no external CSS files unless absolutely needed
 
 ## v1 Scope (what we are building now)
@@ -65,8 +70,12 @@ gym-diet-tracker/
 ## Claude Code Features Used in This Project
 - **CLAUDE.md** — this file, persistent project memory
 - **Hooks** — set up in `.claude/hooks/` (auto-format on save)
-- **MCP servers** — for Open Food Facts API integration
+- **MCP servers** — `.mcp.json` → `mcp/food-server.mjs` (Open Food Facts)
 - **Sub-agents** — for parallel feature building in later phases
 
 ## Current Phase
-Phase 8 complete. All features built. App is fully functional.
+v1 features are built. Now turning it into a product for real users:
+- **Phase 0 (in progress):** get it installing, building and running locally
+- **Phase 1:** safe for strangers — verify RLS, rate-limit/cap the Claude endpoint, error states, tests
+- **Phase 2:** beginner-first UX — mobile-first, PWA install + offline set logging, exercise cues, progression
+- **Phase 3:** launch — Vercel deploy, analytics (activation, W1/W4 retention), feedback, landing page
