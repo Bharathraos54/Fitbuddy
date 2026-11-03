@@ -21,48 +21,57 @@ export default function SessionPage() {
   // Input state per exercise
   const [inputs, setInputs] = useState<Record<string, { reps: number; weight_kg: number }>>({})
 
+  // Guards against creating a second session when React runs the effect twice in dev
+  const startedRef = useRef(false)
+  // Sets per exercise counted on tap, so quick repeat taps get distinct set numbers
+  const setCountsRef = useRef<Record<string, number>>({})
+
   useEffect(() => {
-    initSession()
     timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000)
+    if (!startedRef.current) {
+      startedRef.current = true
+      initSession()
+    }
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [id])
 
-  async function initSession() {
-    // Fetch routine
-    const res = await fetch(`/api/routines/${id}`)
-    if (!res.ok) { router.push('/workouts'); return }
-    const r: Routine = await res.json()
-    setRoutine(r)
+    async function initSession() {
+      // Fetch routine
+      const res = await fetch(`/api/routines/${id}`)
+      if (!res.ok) { router.push('/workouts'); return }
+      const r: Routine = await res.json()
+      setRoutine(r)
 
-    // Pre-fill inputs from defaults
-    const defaults: Record<string, { reps: number; weight_kg: number }> = {}
-    r.routine_exercises.forEach((ex) => {
-      defaults[ex.id] = { reps: ex.default_reps, weight_kg: ex.default_weight_kg }
-    })
-    setInputs(defaults)
+      // Pre-fill inputs from defaults
+      const defaults: Record<string, { reps: number; weight_kg: number }> = {}
+      r.routine_exercises.forEach((ex) => {
+        defaults[ex.id] = { reps: ex.default_reps, weight_kg: ex.default_weight_kg }
+      })
+      setInputs(defaults)
 
-    // Create session
-    const sessionRes = await fetch('/api/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ routine_id: r.id, routine_name: r.name }),
-    })
-    const session = await sessionRes.json()
-    setSessionId(session.id)
-    setLoading(false)
-  }
+      // Create session
+      const sessionRes = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ routine_id: r.id, routine_name: r.name }),
+      })
+      const session = await sessionRes.json()
+      setSessionId(session.id)
+      setLoading(false)
+    }
+  }, [id, router])
 
   async function logSet(exercise: Exercise) {
     if (!sessionId) return
     const input = inputs[exercise.id]
-    const setsForExercise = loggedSets.filter((s) => s.exercise_name === exercise.exercise_name).length
+    const setNumber = (setCountsRef.current[exercise.id] ?? 0) + 1
+    setCountsRef.current[exercise.id] = setNumber
 
     const res = await fetch(`/api/sessions/${sessionId}/sets`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         exercise_name: exercise.exercise_name,
-        set_number: setsForExercise + 1,
+        set_number: setNumber,
         reps: input.reps,
         weight_kg: input.weight_kg,
       }),
@@ -101,7 +110,9 @@ export default function SessionPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {routine.routine_exercises.map((exercise) => {
-          const setsForThis = loggedSets.filter((s) => s.exercise_name === exercise.exercise_name)
+          const setsForThis = loggedSets
+            .filter((s) => s.exercise_name === exercise.exercise_name)
+            .sort((a, b) => a.set_number - b.set_number)
           const input = inputs[exercise.id] ?? { reps: exercise.default_reps, weight_kg: exercise.default_weight_kg }
 
           return (

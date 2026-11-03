@@ -24,7 +24,7 @@ export async function GET() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .not('completed_at', 'is', null)
-    .gte('created_at', weekStart)
+    .gte('started_at', weekStart)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ count: count ?? 0 })

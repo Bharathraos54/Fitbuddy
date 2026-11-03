@@ -33,6 +33,8 @@ export default function DietPage() {
 
   const activePlan = mealPlans.find((p) => p.is_active)
   const totalCalories = logs.reduce((sum, l) => sum + l.calories, 0)
+  // Stale results are hidden once the search box is cleared
+  const visibleResults = searchQuery.trim() ? searchResults : []
 
   const fetchData = useCallback(async () => {
     const [logsRes, plansRes] = await Promise.all([
@@ -48,13 +50,18 @@ export default function DietPage() {
 
   // Debounced food search
   useEffect(() => {
-    if (!searchQuery.trim()) { setSearchResults([]); return }
+    if (!searchQuery.trim()) return
     const timer = setTimeout(async () => {
       setSearching(true)
-      const res = await fetch(`/api/food-search?q=${encodeURIComponent(searchQuery)}`)
-      const data = await res.json()
-      setSearchResults(data.products ?? [])
-      setSearching(false)
+      try {
+        const res = await fetch(`/api/food-search?q=${encodeURIComponent(searchQuery)}`)
+        const data = await res.json()
+        setSearchResults(data.products ?? [])
+      } catch {
+        setSearchResults([])
+      } finally {
+        setSearching(false)
+      }
     }, 400)
     return () => clearTimeout(timer)
   }, [searchQuery])
@@ -179,9 +186,9 @@ export default function DietPage() {
 
                 {searching && <p className="text-sm text-gray-400 text-center">Searching...</p>}
 
-                {searchResults.length > 0 && (
+                {visibleResults.length > 0 && (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {searchResults.map((food) => (
+                    {visibleResults.map((food) => (
                       <div key={food.id} className="bg-gray-800 rounded-xl px-3 py-2.5 flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium leading-tight">{food.name}</p>
@@ -200,7 +207,7 @@ export default function DietPage() {
                   </div>
                 )}
 
-                {searchQuery && !searching && searchResults.length === 0 && (
+                {searchQuery && !searching && visibleResults.length === 0 && (
                   <p className="text-sm text-gray-500 text-center">No results found</p>
                 )}
               </div>

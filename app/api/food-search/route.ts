@@ -6,16 +6,23 @@ export async function GET(request: Request) {
 
   if (!query?.trim()) return NextResponse.json({ products: [] })
 
-  // Use code,_id for the id field — Open Food Facts doesn't return "id" by default
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&action=process&json=1&page_size=10&fields=code,product_name,nutriments,serving_size&sort_by=unique_scans_n`
+  // Open Food Facts search service — the legacy cgi/search.pl endpoint frequently returns 503s
+  const url = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=20&fields=code,product_name,nutriments,serving_size`
 
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'GymDietTracker/1.0 (personal app)' },
-  })
+  let data: { hits?: Record<string, unknown>[] }
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'FitBuddy/0.1 (https://github.com/Bharathraos54/Fitbuddy)' },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) throw new Error(`Open Food Facts responded ${res.status}`)
+    data = await res.json()
+  } catch (err) {
+    console.error('Food search failed:', err)
+    return NextResponse.json({ products: [], error: 'Food search is unavailable right now' }, { status: 502 })
+  }
 
-  const data = await res.json()
-
-  const products = (data.products ?? [])
+  const products = (data.hits ?? [])
     .filter((p: Record<string, unknown>) => {
       const n = p.nutriments as Record<string, number> | undefined
       // Only include products with a name and at least some calorie data

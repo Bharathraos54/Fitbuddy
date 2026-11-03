@@ -173,7 +173,7 @@ export default function OnboardingPage() {
               </div>
 
               <button className={btnPrimary} onClick={() => setStep(2)}>Next</button>
-              <button className={btnSecondary} onClick={handleSkip}>I'll set up manually →</button>
+              <button className={btnSecondary} onClick={handleSkip}>I&apos;ll set up manually →</button>
             </>
           )}
 
@@ -229,7 +229,7 @@ export default function OnboardingPage() {
                   Next
                 </button>
               </div>
-              <button className={btnSecondary} onClick={handleSkip}>I'll set up manually →</button>
+              <button className={btnSecondary} onClick={handleSkip}>I&apos;ll set up manually →</button>
             </>
           )}
 
@@ -279,7 +279,7 @@ export default function OnboardingPage() {
                   Next
                 </button>
               </div>
-              <button className={btnSecondary} onClick={handleSkip}>I'll set up manually →</button>
+              <button className={btnSecondary} onClick={handleSkip}>I&apos;ll set up manually →</button>
             </>
           )}
 
@@ -354,7 +354,7 @@ export default function OnboardingPage() {
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-800 text-gray-400 hover:text-white'
                     }`}>
-                    I'll set it myself
+                    I&apos;ll set it myself
                   </button>
                 </div>
               </div>
@@ -375,7 +375,7 @@ export default function OnboardingPage() {
                   Generate My Plan ✨
                 </button>
               </div>
-              <button className={btnSecondary} onClick={handleSkip}>I'll set up manually →</button>
+              <button className={btnSecondary} onClick={handleSkip}>I&apos;ll set up manually →</button>
             </>
           )}
         </div>
